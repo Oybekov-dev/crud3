@@ -4,12 +4,12 @@ import App from './App.vue';
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
 import store from './store';
+import 'primeicons/primeicons.css';
+import router from './router';
 
 const app = createApp(App);
 
-
 app.use(store);
-
 
 app.use(PrimeVue, {
   theme: { 
@@ -17,6 +17,7 @@ app.use(PrimeVue, {
   }
 });
 
-
+app.use(router);
 
 app.mount("#app");
+
