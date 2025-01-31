@@ -1,7 +1,17 @@
 <template>
   <div class="card2 flex justify-center">
-    <!-- Login tugmasi -->
-    <Button label="Login" icon="pi pi-user" @click="showDialog" />
+    <!-- Login tugmasi yoki foydalanuvchi ma'lumotlarini ko'rsatish -->
+    <Button
+      v-if="!isLoggedIn"
+      label="Login"
+      icon="pi pi-user"
+      @click="showDialog"
+    />
+    <div v-else class="user-info flex items-center justify-between gap-2 w-full">
+      <!-- Username ko'rsatilishi va Logout tugmasi -->
+      <span class="username-text">{{ username }}</span>
+      <Button label="Logout" severity="danger" @click="handleLogout" />
+    </div>
 
     <!-- Login dialog oynasi -->
     <Dialog
@@ -27,9 +37,7 @@
           </svg>
           <div class="login-form">
             <div class="input-group">
-              <label for="username" class="font-semibold text-primary-50"
-                >Username</label
-              >
+              <label for="username" class="font-semibold text-primary-50">Username</label>
               <InputText
                 id="username"
                 class="p-inputtext-sm"
@@ -38,9 +46,7 @@
               />
             </div>
             <div class="input-group">
-              <label for="password" class="font-semibold text-primary-50"
-                >Password</label
-              >
+              <label for="password" class="font-semibold text-primary-50">Password</label>
               <InputText
                 id="password"
                 type="password"
@@ -50,14 +56,8 @@
               />
             </div>
             <div class="btns flex justify-end gap-2 mt-4">
-              <Button
-                label="Cancel"
-                severity="secondary"
-                @click="closeCallback"
-              />
+              <Button label="Cancel" severity="secondary" @click="closeCallback" />
               <Button label="Sign-In" @click="handleLogin" />
-              <!-- Foydalanuvchi nomini ko'rsatish -->
-              <h1>{{ form.username }}</h1>
             </div>
           </div>
         </div>
@@ -67,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
@@ -78,11 +78,35 @@ const form = ref({
   username: "",
   password: "",
 });
+const isLoggedIn = ref(false);
+const username = ref("");
+
+// Sahifa yuklanganda foydalanuvchi login bo‘lsa, uni chiqarish
+onMounted(() => {
+  const savedUsername = localStorage.getItem("username");
+  if (savedUsername) {
+    username.value = savedUsername;
+    isLoggedIn.value = true;
+  }
+});
 
 // Login funksiyasi
 function handleLogin() {
-  console.log("Username:", form.value.username);
-  console.log("Password:", form.value.password);
+  if (form.value.username.trim() !== "" && form.value.password.trim() !== "") {
+    localStorage.setItem("username", form.value.username);
+    username.value = form.value.username;
+    isLoggedIn.value = true;
+    visible.value = false;
+  } else {
+    alert("Iltimos, foydalanuvchi nomi va parolni kiriting!");
+  }
+}
+
+// Logout funksiyasi
+function handleLogout() {
+  localStorage.removeItem("username");
+  username.value = "";
+  isLoggedIn.value = false;
 }
 
 // Dialogni ko'rsatish funksiyasi
@@ -92,20 +116,18 @@ function showDialog() {
 </script>
 
 <style scoped>
+/* Login oynasi dizayni */
 .login-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(
-    135deg,
-    rgb(136, 136, 138) 0%,
-    rgb(122, 121, 122) 100%
-  );
+  background: linear-gradient(135deg, rgb(136, 136, 138) 0%, rgb(122, 121, 122) 100%);
   padding: 20px;
   border-radius: 15px;
 }
 
+/* Form dizayni */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -138,5 +160,26 @@ button {
 
 .btns {
   gap: 5px;
+}
+
+/* User Info Styling */
+.user-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.username-text {
+  font-size: 16px;
+  color: var(--p-primary-700);
+  font-weight: bold;
+  border: solid 2px;
+  padding: 5px;
+  border-radius: 10px;
+}
+
+.username-text + .p-button {
+  margin-left: 10px;
 }
 </style>
